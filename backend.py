@@ -1,5 +1,6 @@
 from bottle import route, run, request, response, static_file
 import time
+import argparse
 
 @route('/')
 def index():
@@ -22,4 +23,11 @@ def process_audio():
 
 # Run the server
 if __name__ == '__main__':
-    run(host='localhost', port=8080)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--global', action='store_true', help='Run server globally on 0.0.0.0')
+    parser.add_argument('--port', type=int, default=8080, help='Port to run server on')
+    args = parser.parse_args()
+
+    # ipconfig getifaddr en0
+    host = '0.0.0.0' if getattr(args, 'global') else 'localhost'
+    run(host=host, port=args.port)
