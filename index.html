@@ -15,7 +15,7 @@
             background-color: #f0f0f0;
         }
         
-        #recordButton {
+        #talkButton {
             padding: 20px 40px;
             font-size: 18px;
             border: none;
@@ -25,12 +25,12 @@
             outline: none;
         }
 
-        .record {
+        .not-talking {
             background-color: #4CAF50;
             color: white;
         }
 
-        .recording {
+        .talking {
             background-color: #f44336;
             color: white;
         }
@@ -50,12 +50,13 @@
 </head>
 <body>
     <div id="status"></div>
-    <button id="recordButton" class="record">Talk</button>
+    <button id="talkButton" class="not-talking">Talk</button>
 
     <script>
         let mediaRecorder;
         let audioChunks = [];
         let isRecording = false;
+        let isTalking = false;
         let silenceTimer = null;
         let audioContext;
         let analyser;
@@ -63,8 +64,9 @@
         let silenceStart = null;
         const silenceDuration = 1000; // 1 second of silence
         let hasSpeechOccurred = false;
+        let currentAudio = null;
 
-        const recordButton = document.getElementById('recordButton');
+        const talkButton = document.getElementById('talkButton');
         const statusDiv = document.getElementById('status');
 
         async function setupRecording() {
@@ -81,8 +83,6 @@
             };
 
             mediaRecorder.onstop = async () => {
-                recordButton.classList.remove('recording');
-                recordButton.classList.add('record');
                 statusDiv.textContent = 'Processing audio...';
                 
                 const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
@@ -97,25 +97,34 @@
                     
                     const processedAudio = await response.blob();
                     const audioUrl = URL.createObjectURL(processedAudio);
-                    const audio = new Audio(audioUrl);
+                    currentAudio = new Audio(audioUrl);
                     
                     statusDiv.textContent = 'Playing audio...';
                     
-                    audio.onended = () => {
-                        recordButton.disabled = false;
+                    currentAudio.onended = () => {
                         statusDiv.textContent = '';
+                        currentAudio = null;
                         // Automatically start recording again after playback
-                        startRecording();
+                        if (isTalking) {
+                            startRecording();
+                        }
                     };
                     
-                    audio.play();
+                    if (isTalking) { // Only play if still in talking mode
+                        currentAudio.play();
+                    } else {
+                        statusDiv.textContent = '';
+                        currentAudio = null;
+                    }
                 } catch (error) {
                     console.error('Error processing audio:', error);
                     statusDiv.textContent = 'Error processing audio';
                     setTimeout(() => {
                         statusDiv.textContent = '';
                         // Start recording again even if there was an error
-                        startRecording();
+                        if (isTalking) {
+                            startRecording();
+                        }
                     }, 3000);
                 }
             };
@@ -150,9 +159,9 @@
             mediaRecorder.start();
             isRecording = true;
             hasSpeechOccurred = false;
-            recordButton.classList.remove('record');
-            recordButton.classList.add('recording');
-            recordButton.textContent = 'End Talk';
+            talkButton.classList.remove('not-talking');
+            talkButton.classList.add('talking');
+            talkButton.textContent = 'End Talk';
             statusDiv.textContent = 'Recording...';
             checkSilence();
         }
@@ -160,21 +169,28 @@
         function stopRecording() {
             mediaRecorder.stop();
             isRecording = false;
-            recordButton.disabled = true;
-            recordButton.textContent = 'Talk';
             silenceStart = null;
         }
 
-        recordButton.addEventListener('click', async () => {
+        talkButton.addEventListener('click', async () => {
             if (!mediaRecorder) {
                 await setupRecording();
             }
             
-            if (!isRecording && !recordButton.disabled) {
-                startRecording();
-            } else if (isRecording) {
+            if (isTalking) {
                 stopRecording();
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio = null;
+                }
+                talkButton.classList.remove('talking');
+                talkButton.classList.add('not-talking');
+                talkButton.textContent = 'Talk';
+                statusDiv.textContent = '';
+            } else {
+                startRecording();
             }
+            isTalking = !isTalking;
         });
     </script>
 </body>
