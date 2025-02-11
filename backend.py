@@ -6,7 +6,7 @@ from groq import generate_response
 from speech_to_text import transcribe_audio
 from conversation import text_to_speech, GROQ_API_KEY, VOICE_ID, ELEVENLABS_API_KEY
 
-RESPOND_WITH_COPY = False
+ECHO = False
 
 @route('/')
 def index():
@@ -17,7 +17,7 @@ def process_audio():
     # Get the uploaded audio file
     audio_file = request.files.get('audio')
     audio_data = audio_file.file.read()
-    if RESPOND_WITH_COPY:
+    if ECHO:
         time.sleep(2)
     else:
         # Save the uploaded audio file
@@ -44,7 +44,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--global', action='store_true', help='Run server globally on 0.0.0.0')
     parser.add_argument('--port', type=int, default=8080, help='Port to run server on')
+    parser.add_argument('--echo', action='store_true', help='Echo back the uploaded audio file')
     args = parser.parse_args()
+    ECHO = args.echo
 
     # ipconfig getifaddr en0
     host = '0.0.0.0' if getattr(args, 'global') else 'localhost'
