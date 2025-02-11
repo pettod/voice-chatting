@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voice Recorder</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>Voice Chat</title>
     <style>
         body {
             display: flex;
@@ -11,7 +12,7 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            font-family: 'Inter', system-ui, sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: #000000;
             color: #d4d4d4;
         }
@@ -27,6 +28,18 @@
             max-width: 600px;
             position: relative;
             margin: 1rem;
+        }
+
+        h1 {
+            text-align: center;
+            background: linear-gradient(to right, #c1c1c1, #ffffff, #6d6d6d);
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            font-size: 3.0rem;
+            margin-bottom: 2rem;
+            font-weight: 600;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
         .button-container {
@@ -135,20 +148,23 @@
     </style>
 </head>
 <body>
-    <div class="chat-container">
-        <div id="status"></div>
-        <div class="button-container">
-            <div class="waveform-container">
-                <div class="waveform-bar"></div>
-                <div class="waveform-bar"></div>
-                <div class="waveform-bar"></div>
-                <div class="waveform-bar"></div>
-                <div class="waveform-bar"></div>
-                <div class="waveform-bar"></div>
-                <div class="waveform-bar"></div>
-                <div class="waveform-bar"></div>
+    <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+        <h1>Voice Clone AI</h1>
+        <div class="chat-container">
+            <div id="status"></div>
+            <div class="button-container">
+                <div class="waveform-container">
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
+                </div>
+                <button id="talkButton" class="not-talking">Talk</button>
             </div>
-            <button id="talkButton" class="not-talking">Talk</button>
         </div>
     </div>
 
