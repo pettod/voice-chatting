@@ -169,7 +169,7 @@
             };
 
             mediaRecorder.onstop = async () => {
-                statusDiv.textContent = 'Processing audio...';
+                statusDiv.textContent = 'Thinking...';
                 waveformContainer.classList.remove('active');
                 
                 const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
@@ -194,7 +194,7 @@
                     audioSource.connect(playbackAnalyser);
                     playbackAnalyser.connect(audioContext.destination);
                     
-                    statusDiv.textContent = 'Playing audio...';
+                    statusDiv.textContent = 'Responding...';
                     waveformContainer.classList.add('active');
                     
                     currentAudio.onended = () => {
@@ -306,7 +306,7 @@
             talkButton.classList.remove('not-talking');
             talkButton.classList.add('talking');
             talkButton.textContent = 'End Talk';
-            statusDiv.textContent = 'Recording...';
+            statusDiv.textContent = 'Listening...';
             waveformContainer.classList.add('active');
             checkSilence();
             updateWaveform();
