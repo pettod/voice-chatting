@@ -3,135 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voice Chat Assistant</title>
+    <title>Voice Recorder</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .chat-container {
-            background-color: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            min-height: 400px;
-        }
-        .chat-messages {
-            height: 300px;
-            overflow-y: auto;
-            margin-bottom: 20px;
-            padding: 10px;
-        }
-        .message {
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 8px;
-        }
-        .user-message {
-            background-color: #e3f2fd;
-            margin-left: 20%;
-        }
-        .ai-message {
-            background-color: #f5f5f5;
-            margin-right: 20%;
-        }
-        .controls {
             display: flex;
-            gap: 10px;
             justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
         }
-        button {
-            padding: 12px 24px;
+        
+        #recordButton {
+            padding: 20px 40px;
+            font-size: 18px;
             border: none;
             border-radius: 25px;
             cursor: pointer;
-            font-size: 16px;
             transition: all 0.3s ease;
+            outline: none;
         }
-        #recordButton {
+
+        .record {
             background-color: #4CAF50;
             color: white;
         }
-        #recordButton:hover {
-            background-color: #45a049;
-        }
-        #recordButton.recording {
+
+        .recording {
             background-color: #f44336;
+            color: white;
         }
-        .status {
-            text-align: center;
-            margin: 10px 0;
-            font-style: italic;
+
+        .playing {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        #status {
+            position: fixed;
+            top: 20px;
+            font-size: 16px;
             color: #666;
         }
     </style>
 </head>
 <body>
-    <div class="chat-container">
-        <h1 style="text-align: center;">Voice Chat Assistant</h1>
-        <div class="chat-messages" id="chatMessages">
-            <!-- Messages will be inserted here -->
-        </div>
-        <div class="status" id="status">Click the button and start speaking</div>
-        <div class="controls">
-            <button id="recordButton">Start Recording</button>
-        </div>
-    </div>
+    <div id="status"></div>
+    <button id="recordButton" class="record">Talk</button>
 
     <script>
+        let mediaRecorder;
+        let audioChunks = [];
         let isRecording = false;
+        let silenceTimer = null;
+        let audioContext;
+        let analyser;
+        let silenceThreshold = 0.01;
+        let silenceStart = null;
+        const silenceDuration = 1000; // 1 second of silence
+        let hasSpeechOccurred = false;
+
         const recordButton = document.getElementById('recordButton');
-        const chatMessages = document.getElementById('chatMessages');
         const statusDiv = document.getElementById('status');
 
-        function addMessage(text, isUser = false) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
-            messageDiv.textContent = text;
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+        async function setupRecording() {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            
+            audioContext = new AudioContext();
+            const source = audioContext.createMediaStreamSource(stream);
+            analyser = audioContext.createAnalyser();
+            source.connect(analyser);
+            
+            mediaRecorder.ondataavailable = (event) => {
+                audioChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = async () => {
+                recordButton.classList.remove('recording');
+                recordButton.classList.add('record');
+                statusDiv.textContent = 'Processing audio...';
+                
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                const formData = new FormData();
+                formData.append('audio', audioBlob);
+
+                try {
+                    const response = await fetch('/process-audio', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const processedAudio = await response.blob();
+                    const audioUrl = URL.createObjectURL(processedAudio);
+                    const audio = new Audio(audioUrl);
+                    
+                    statusDiv.textContent = 'Playing audio...';
+                    
+                    audio.onended = () => {
+                        recordButton.disabled = false;
+                        statusDiv.textContent = '';
+                        // Automatically start recording again after playback
+                        startRecording();
+                    };
+                    
+                    audio.play();
+                } catch (error) {
+                    console.error('Error processing audio:', error);
+                    statusDiv.textContent = 'Error processing audio';
+                    setTimeout(() => {
+                        statusDiv.textContent = '';
+                        // Start recording again even if there was an error
+                        startRecording();
+                    }, 3000);
+                }
+            };
+        }
+
+        function checkSilence() {
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteFrequencyData(dataArray);
+            
+            const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+            const normalizedAverage = average / 255;
+
+            if (normalizedAverage >= silenceThreshold) {
+                hasSpeechOccurred = true;
+                silenceStart = null;
+            } else if (hasSpeechOccurred) {
+                if (!silenceStart) {
+                    silenceStart = Date.now();
+                } else if (Date.now() - silenceStart >= silenceDuration) {
+                    stopRecording();
+                    return;
+                }
+            }
+
+            if (isRecording) {
+                requestAnimationFrame(checkSilence);
+            }
+        }
+
+        function startRecording() {
+            audioChunks = [];
+            mediaRecorder.start();
+            isRecording = true;
+            hasSpeechOccurred = false;
+            recordButton.classList.remove('record');
+            recordButton.classList.add('recording');
+            recordButton.textContent = 'End Talk';
+            statusDiv.textContent = 'Recording...';
+            checkSilence();
+        }
+
+        function stopRecording() {
+            mediaRecorder.stop();
+            isRecording = false;
+            recordButton.disabled = true;
+            recordButton.textContent = 'Talk';
+            silenceStart = null;
         }
 
         recordButton.addEventListener('click', async () => {
-            if (!isRecording) {
-                // Start recording
-                isRecording = true;
-                recordButton.textContent = 'Stop Recording';
-                recordButton.classList.add('recording');
-                statusDiv.textContent = 'Recording...';
-                
-                // Make API call to start recording
-                try {
-                    const response = await fetch('/start_recording', { method: 'POST' });
-                    if (!response.ok) throw new Error('Failed to start recording');
-                } catch (error) {
-                    console.error('Error:', error);
-                    statusDiv.textContent = 'Error starting recording';
-                }
-            } else {
-                // Stop recording
-                isRecording = false;
-                recordButton.textContent = 'Start Recording';
-                recordButton.classList.remove('recording');
-                statusDiv.textContent = 'Processing...';
-
-                // Make API call to stop recording and get response
-                try {
-                    const response = await fetch('/stop_recording', { method: 'POST' });
-                    if (!response.ok) throw new Error('Failed to stop recording');
-                    
-                    const data = await response.json();
-                    addMessage(data.userText, true);
-                    addMessage(data.aiResponse, false);
-                    
-                    statusDiv.textContent = 'Click the button and start speaking';
-                } catch (error) {
-                    console.error('Error:', error);
-                    statusDiv.textContent = 'Error processing recording';
-                }
+            if (!mediaRecorder) {
+                await setupRecording();
+            }
+            
+            if (!isRecording && !recordButton.disabled) {
+                startRecording();
+            } else if (isRecording) {
+                stopRecording();
             }
         });
     </script>
