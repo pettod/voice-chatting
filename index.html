@@ -46,10 +46,54 @@
             font-size: 16px;
             color: #666;
         }
+
+        .waveform-container {
+            position: fixed;
+            bottom: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px; /* Increased gap */
+            height: 100px; /* Increased height */
+            width: 300px; /* Added explicit width */
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .waveform-container.active {
+            opacity: 1;
+        }
+
+        .waveform-bar {
+            width: 6px; /* Increased width */
+            height: 100%;
+            background-color: #2196F3;
+            border-radius: 3px; /* Increased radius */
+            transition: transform 0.05s ease;
+        }
+
+        @keyframes wave {
+            0%, 100% {
+                transform: scaleY(0.1);
+            }
+            50% {
+                transform: scaleY(1);
+            }
+        }
     </style>
 </head>
 <body>
     <div id="status"></div>
+    <div class="waveform-container">
+        <div class="waveform-bar"></div>
+        <div class="waveform-bar"></div>
+        <div class="waveform-bar"></div>
+        <div class="waveform-bar"></div>
+        <div class="waveform-bar"></div>
+        <div class="waveform-bar"></div>
+        <div class="waveform-bar"></div>
+        <div class="waveform-bar"></div>
+    </div>
     <button id="talkButton" class="not-talking">Talk</button>
 
     <script>
@@ -60,7 +104,7 @@
         let silenceTimer = null;
         let audioContext;
         let analyser;
-        let silenceThreshold = 0.01;
+        let silenceThreshold = 0.005; // Reduced threshold for more sensitivity
         let silenceStart = null;
         const silenceDuration = 1000; // 1 second of silence
         let hasSpeechOccurred = false;
@@ -68,6 +112,8 @@
 
         const talkButton = document.getElementById('talkButton');
         const statusDiv = document.getElementById('status');
+        const waveformContainer = document.querySelector('.waveform-container');
+        const waveformBars = document.querySelectorAll('.waveform-bar');
 
         async function setupRecording() {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -76,6 +122,8 @@
             audioContext = new AudioContext();
             const source = audioContext.createMediaStreamSource(stream);
             analyser = audioContext.createAnalyser();
+            analyser.fftSize = 512; // Increased FFT size for better frequency resolution
+            analyser.smoothingTimeConstant = 0.5; // Added smoothing for more fluid movement
             source.connect(analyser);
             
             mediaRecorder.ondataavailable = (event) => {
@@ -84,6 +132,7 @@
 
             mediaRecorder.onstop = async () => {
                 statusDiv.textContent = 'Processing audio...';
+                waveformContainer.classList.remove('active');
                 
                 const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
                 const formData = new FormData();
@@ -100,10 +149,12 @@
                     currentAudio = new Audio(audioUrl);
                     
                     statusDiv.textContent = 'Playing audio...';
+                    waveformContainer.classList.add('active');
                     
                     currentAudio.onended = () => {
                         statusDiv.textContent = '';
                         currentAudio = null;
+                        waveformContainer.classList.remove('active');
                         // Automatically start recording again after playback
                         if (isTalking) {
                             startRecording();
@@ -115,10 +166,12 @@
                     } else {
                         statusDiv.textContent = '';
                         currentAudio = null;
+                        waveformContainer.classList.remove('active');
                     }
                 } catch (error) {
                     console.error('Error processing audio:', error);
                     statusDiv.textContent = 'Error processing audio';
+                    waveformContainer.classList.remove('active');
                     setTimeout(() => {
                         statusDiv.textContent = '';
                         // Start recording again even if there was an error
@@ -128,6 +181,26 @@
                     }, 3000);
                 }
             };
+        }
+
+        function updateWaveform() {
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteFrequencyData(dataArray);
+            
+            const barCount = waveformBars.length;
+            const step = Math.floor(dataArray.length / barCount);
+            
+            for(let i = 0; i < barCount; i++) {
+                const start = i * step;
+                const end = start + step;
+                const average = dataArray.slice(start, end).reduce((a, b) => a + b) / step;
+                const scale = Math.max(0.1, (average / 255) * 1.5); // Increased scaling factor and reduced min scale
+                waveformBars[i].style.transform = `scaleY(${scale})`;
+            }
+
+            if (isRecording) {
+                requestAnimationFrame(updateWaveform);
+            }
         }
 
         function checkSilence() {
@@ -163,13 +236,16 @@
             talkButton.classList.add('talking');
             talkButton.textContent = 'End Talk';
             statusDiv.textContent = 'Recording...';
+            waveformContainer.classList.add('active');
             checkSilence();
+            updateWaveform();
         }
 
         function stopRecording() {
             mediaRecorder.stop();
             isRecording = false;
             silenceStart = null;
+            waveformBars.forEach(bar => bar.style.transform = 'scaleY(0.1)');
         }
 
         talkButton.addEventListener('click', async () => {
@@ -182,6 +258,7 @@
                 if (currentAudio) {
                     currentAudio.pause();
                     currentAudio = null;
+                    waveformContainer.classList.remove('active');
                 }
                 talkButton.classList.remove('talking');
                 talkButton.classList.add('not-talking');
