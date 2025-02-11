@@ -15,6 +15,14 @@
             background-color: #f0f0f0;
         }
         
+        .button-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
         #talkButton {
             padding: 20px 40px;
             font-size: 18px;
@@ -23,6 +31,7 @@
             cursor: pointer;
             transition: all 0.3s ease;
             outline: none;
+            width: 150px; /* Added fixed width */
         }
 
         .not-talking {
@@ -48,14 +57,12 @@
         }
 
         .waveform-container {
-            position: fixed;
-            bottom: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 4px; /* Increased gap */
-            height: 100px; /* Increased height */
-            width: 300px; /* Added explicit width */
+            gap: 5px; /* Increased gap */
+            height: 130px; /* Increased height by 30% */
+            width: 390px; /* Increased width by 30% */
             opacity: 0;
             transition: opacity 0.3s ease;
         }
@@ -65,10 +72,10 @@
         }
 
         .waveform-bar {
-            width: 6px; /* Increased width */
+            width: 8px; /* Increased width by 30% */
             height: 100%;
             background-color: #2196F3;
-            border-radius: 3px; /* Increased radius */
+            border-radius: 4px; /* Increased radius for more rounded corners */
             transition: transform 0.05s ease;
         }
 
@@ -84,17 +91,19 @@
 </head>
 <body>
     <div id="status"></div>
-    <div class="waveform-container">
-        <div class="waveform-bar"></div>
-        <div class="waveform-bar"></div>
-        <div class="waveform-bar"></div>
-        <div class="waveform-bar"></div>
-        <div class="waveform-bar"></div>
-        <div class="waveform-bar"></div>
-        <div class="waveform-bar"></div>
-        <div class="waveform-bar"></div>
+    <div class="button-container">
+        <div class="waveform-container">
+            <div class="waveform-bar"></div>
+            <div class="waveform-bar"></div>
+            <div class="waveform-bar"></div>
+            <div class="waveform-bar"></div>
+            <div class="waveform-bar"></div>
+            <div class="waveform-bar"></div>
+            <div class="waveform-bar"></div>
+            <div class="waveform-bar"></div>
+        </div>
+        <button id="talkButton" class="not-talking">Talk</button>
     </div>
-    <button id="talkButton" class="not-talking">Talk</button>
 
     <script>
         let mediaRecorder;
@@ -104,7 +113,7 @@
         let silenceTimer = null;
         let audioContext;
         let analyser;
-        let silenceThreshold = 0.005; // Reduced threshold for more sensitivity
+        let silenceThreshold = 0.01; // Reduced threshold for more sensitivity
         let silenceStart = null;
         const silenceDuration = 1000; // 1 second of silence
         let hasSpeechOccurred = false;
