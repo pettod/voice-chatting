@@ -2,6 +2,12 @@ from bottle import route, run, request, response, static_file
 import time
 import argparse
 
+from groq import generate_response
+from speech_to_text import transcribe_audio
+from conversation import text_to_speech, GROQ_API_KEY, VOICE_ID, ELEVENLABS_API_KEY
+
+RESPOND_WITH_COPY = False
+
 @route('/')
 def index():
     return static_file('index.html', root='.')
@@ -10,14 +16,26 @@ def index():
 def process_audio():
     # Get the uploaded audio file
     audio_file = request.files.get('audio')
-    time.sleep(2)
-    
+    audio_data = audio_file.file.read()
+    if RESPOND_WITH_COPY:
+        time.sleep(2)
+    else:
+        # Save the uploaded audio file
+        audio_filename = 'audio.wav'
+        with open(audio_filename, 'wb') as f:
+            f.write(audio_data)
+        text = transcribe_audio(audio_filename)
+        ai_response = generate_response(text, GROQ_API_KEY)
+        audio_filename = text_to_speech(ai_response)
+        with open(audio_filename, 'rb') as f:
+            audio_data = f.read()
+
     if audio_file:
         # Set response headers for audio file
         response.headers['Content-Type'] = 'audio/wav'
         
         # Return the same audio data
-        return audio_file.file.read()
+        return audio_data
     
     return {'error': 'No audio file received'}
 

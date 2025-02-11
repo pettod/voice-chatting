@@ -10,6 +10,7 @@ with open('elevenlabs_api_key.txt', 'r') as f:
     ELEVENLABS_API_KEY = f.read().strip()
 with open('elevenlabs_voice_id_peter.txt', 'r') as f:
     VOICE_ID = f.read().strip()  # ElevenLabs voice ID
+GROQ_API_KEY = read_api_key()
 
 # Convert AI response to speech using ElevenLabs
 def text_to_speech(text, output_file="ai_response.mp3"):
@@ -34,12 +35,11 @@ def text_to_speech(text, output_file="ai_response.mp3"):
 
 # Main conversational loop
 def main():
-    groq_api_key = read_api_key()
     while True:
         record_audio()
         text = transcribe_audio()
 
-        ai_response = generate_response(text, groq_api_key)
+        ai_response = generate_response(text, GROQ_API_KEY)
         print("AI:", ai_response)
 
         audio_file = text_to_speech(ai_response)
