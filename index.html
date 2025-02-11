@@ -19,13 +19,14 @@
         .chat-container {
             background: linear-gradient(145deg, #44444461, #000000);
             border-radius: 24px;
-            padding: 2rem;
+            padding: 1.5rem;
             border: 1px solid rgba(255, 255, 255, 0.457);
             box-shadow: 0 0 10px rgba(255, 255, 255, 0.1),
                         inset 0 0 10px rgba(255, 255, 255, 0.05);
             width: 90%;
             max-width: 600px;
             position: relative;
+            margin: 1rem;
         }
 
         .button-container {
@@ -33,21 +34,23 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 24px;
+            gap: 20px;
         }
 
         #talkButton {
-            padding: 20px 40px;
-            font-size: 18px;
+            padding: 16px 32px;
+            font-size: clamp(14px, 4vw, 18px);
             border: none;
             border-radius: 16px;
             cursor: pointer;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             outline: none;
-            width: 180px;
+            width: min(180px, 80%);
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
         }
 
         .not-talking {
@@ -69,28 +72,28 @@
         }
 
         #status {
-            padding-bottom: 20px;
-            font-size: 16px;
+            padding-bottom: 16px;
+            font-size: clamp(14px, 3.5vw, 16px);
             color: #808080;
             font-weight: 500;
             text-align: center;
             width: 100%;
-            min-height: 20px; /* Fixed height even when empty */
-            display: block; /* Ensures the height is maintained */
+            min-height: 20px;
+            display: block;
         }
 
         .waveform-container {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            height: 140px;
-            width: 300px;
+            gap: 4px;
+            height: min(140px, 30vh);
+            width: min(300px, 90%);
             opacity: 0;
             transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             background: rgba(0, 0, 0, 0.288);
             border-radius: 20px;
-            padding: 20px;
+            padding: 16px;
             border: 1px solid rgba(255, 255, 255, 0.246);
         }
 
@@ -99,7 +102,7 @@
         }
 
         .waveform-bar {
-            width: 8px;
+            width: min(8px, 2vw);
             height: 100%;
             background: linear-gradient(180deg, #ffffff, #a9a9a9b0);
             transition: transform 0.05s ease;
@@ -111,6 +114,22 @@
             }
             50% {
                 transform: scaleY(1);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .chat-container {
+                padding: 1rem;
+                border-radius: 16px;
+            }
+
+            .button-container {
+                gap: 16px;
+            }
+
+            .waveform-container {
+                padding: 12px;
+                border-radius: 16px;
             }
         }
     </style>
