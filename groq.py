@@ -3,7 +3,7 @@ import requests
 
 def read_api_key():
     try:
-        with open('groq_api_key.txt', 'r') as f:
+        with open('api_keys/groq_api_key.txt', 'r') as f:
             return f.read().strip()
     except FileNotFoundError:
         print("Error: groq_api_key.txt file not found")

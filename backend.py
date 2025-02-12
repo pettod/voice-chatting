@@ -4,9 +4,10 @@ import argparse
 
 from groq import generate_response
 from speech_to_text import transcribe_audio
-from conversation import text_to_speech, GROQ_API_KEY, VOICE_ID, ELEVENLABS_API_KEY
+from conversation import text_to_speech, GROQ_API_KEY, play_ht_tts
 
 ECHO = False
+PLAYHT = True # Set to False to use ElevenLabs TTS
 
 @route('/')
 def index():
@@ -26,7 +27,10 @@ def process_audio():
             f.write(audio_data)
         text = transcribe_audio(audio_filename)
         ai_response = generate_response(text, GROQ_API_KEY)
-        audio_filename = text_to_speech(ai_response)
+        if PLAYHT:
+            audio_filename = play_ht_tts(ai_response)
+        else:
+            audio_filename = text_to_speech(ai_response)
         with open(audio_filename, 'rb') as f:
             audio_data = f.read()
 
