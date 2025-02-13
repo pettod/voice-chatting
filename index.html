@@ -18,7 +18,7 @@
         }
         
         .chat-container {
-            background: radial-gradient(circle at center, #a955f768 0%, #000000 60%);
+            background: radial-gradient(circle at center, #a955f768 0%, #000000 70%);
             border-radius: 24px;
             border: 1px solid rgba(255, 255, 255, 0.457);
             box-shadow: 0 0 10px rgba(255, 255, 255, 0.1),
@@ -115,7 +115,7 @@
             height: min(180px, 30vh);
             width: min(180px, 90%);
             opacity: 0;
-            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             background: rgba(0, 0, 0, 0.288);
             border-radius: 120px;
             padding: 16px;
@@ -124,6 +124,11 @@
 
         .waveform-container.active {
             opacity: 1;
+        }
+
+        .waveform-container.listening {
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
         }
 
         .waveform-bar {
@@ -213,7 +218,7 @@
 
             mediaRecorder.onstop = async () => {
                 statusDiv.textContent = 'Thinking...';
-                waveformContainer.classList.remove('active');
+                waveformContainer.classList.remove('listening');
                 
                 const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
                 const formData = new FormData();
@@ -238,17 +243,20 @@
                     playbackAnalyser.connect(audioContext.destination);
                     
                     statusDiv.textContent = 'Responding...';
-                    waveformContainer.classList.add('active');
                     
                     currentAudio.onended = () => {
                         statusDiv.textContent = '';
                         currentAudio = null;
                         playbackAnalyser = null;
-                        waveformContainer.classList.remove('active');
-                        // Automatically start recording again after playback
-                        if (isTalking) {
-                            startRecording();
-                        }
+                        // Add a small delay before transitioning to listening state
+                        setTimeout(() => {
+                            if (isTalking) {
+                                waveformContainer.classList.add('listening');
+                                startRecording();
+                            } else {
+                                waveformContainer.classList.remove('active');
+                            }
+                        }, 400); // Match the CSS transition duration
                     };
                     
                     if (isTalking) { // Only play if still in talking mode
@@ -264,6 +272,7 @@
                     console.error('Error processing audio:', error);
                     statusDiv.textContent = 'Error processing audio';
                     waveformContainer.classList.remove('active');
+                    waveformContainer.classList.remove('listening');
                     setTimeout(() => {
                         statusDiv.textContent = '';
                         // Start recording again even if there was an error
@@ -351,6 +360,7 @@
             talkButton.textContent = 'End Talk';
             statusDiv.textContent = 'Listening...';
             waveformContainer.classList.add('active');
+            waveformContainer.classList.add('listening');
             timerDiv.classList.add('active');
             checkSilence();
             updateWaveform();
@@ -375,6 +385,7 @@
                     currentAudio = null;
                     playbackAnalyser = null;
                     waveformContainer.classList.remove('active');
+                    waveformContainer.classList.remove('listening');
                 }
                 talkButton.classList.remove('talking');
                 talkButton.classList.add('not-talking');
