@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <title>Voice Chat</title>
+    <title>Otherly</title>
     <style>
         body {
             display: flex;
@@ -85,14 +85,27 @@
         }
 
         #status {
-            padding-bottom: 16px;
             font-size: clamp(14px, 3.5vw, 16px);
-            color: #808080;
+            color: #cbcbcb;
             font-weight: 500;
             text-align: center;
             width: 100%;
             min-height: 20px;
             display: block;
+        }
+
+        #timer {
+            font-size: clamp(14px, 4vw, 16px);
+            color: #cbcbcb;
+            text-align: center;
+            margin-bottom: 6px;
+            font-weight: bold;
+            min-height: 20px;
+            visibility: hidden;
+        }
+
+        #timer.active {
+            visibility: visible;
         }
 
         .waveform-container {
@@ -149,9 +162,8 @@
 </head>
 <body>
     <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
-        <h1>Voice Clone AI</h1>
+        <h1>Otherly</h1>
         <div class="chat-container">
-            <div id="status"></div>
             <div class="button-container">
                 <div class="waveform-container">
                     <div class="waveform-bar"></div>
@@ -163,6 +175,8 @@
                     <div class="waveform-bar"></div>
                     <div class="waveform-bar"></div>
                 </div>
+                <div id="status"></div>
+                <div id="timer">00:00</div>
                 <button id="talkButton" class="not-talking">Talk</button>
             </div>
         </div>
@@ -182,11 +196,22 @@
         let hasSpeechOccurred = false;
         let currentAudio = null;
         let playbackAnalyser = null;
+        let startTime;
+        let timerInterval;
 
         const talkButton = document.getElementById('talkButton');
         const statusDiv = document.getElementById('status');
+        const timerDiv = document.getElementById('timer');
         const waveformContainer = document.querySelector('.waveform-container');
         const waveformBars = document.querySelectorAll('.waveform-bar');
+
+        function updateTimer() {
+            const elapsed = Date.now() - startTime;
+            const seconds = Math.floor(elapsed / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            timerDiv.textContent = `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
 
         async function setupRecording() {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -343,6 +368,7 @@
             talkButton.textContent = 'End Talk';
             statusDiv.textContent = 'Listening...';
             waveformContainer.classList.add('active');
+            timerDiv.classList.add('active');
             checkSilence();
             updateWaveform();
         }
@@ -371,8 +397,13 @@
                 talkButton.classList.add('not-talking');
                 talkButton.textContent = 'Talk';
                 statusDiv.textContent = '';
+                clearInterval(timerInterval);
+                timerDiv.textContent = '00:00';
+                timerDiv.classList.remove('active');
             } else {
                 startRecording();
+                startTime = Date.now();
+                timerInterval = setInterval(updateTimer, 1000);
             }
             isTalking = !isTalking;
         });
