@@ -20,14 +20,13 @@
         .chat-container {
             background: radial-gradient(circle at center, #a955f768 0%, #000000 60%);
             border-radius: 24px;
-            padding: 1.5rem;
             border: 1px solid rgba(255, 255, 255, 0.457);
             box-shadow: 0 0 10px rgba(255, 255, 255, 0.1),
                         inset 0 0 10px rgba(255, 255, 255, 0.05);
-            width: 90%;
-            max-width: 600px;
+            width: 600px;
+            max-width: calc(90% - 3rem);
             position: relative;
-            margin: 1rem;
+            padding: 1.5rem;
         }
 
         h1 {
@@ -140,22 +139,6 @@
             }
             50% {
                 transform: scaleY(1);
-            }
-        }
-
-        @media (max-width: 480px) {
-            .chat-container {
-                padding: 1rem;
-                border-radius: 16px;
-            }
-
-            .button-container {
-                gap: 16px;
-            }
-
-            .waveform-container {
-                padding: 12px;
-                border-radius: 16px;
             }
         }
     </style>
