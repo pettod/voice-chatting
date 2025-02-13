@@ -91,6 +91,7 @@
             width: 100%;
             min-height: 20px;
             display: block;
+            transition: opacity 0.4s ease;
         }
 
         #timer {
@@ -100,11 +101,12 @@
             margin-bottom: 6px;
             font-weight: bold;
             min-height: 20px;
-            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.4s ease;
         }
 
         #timer.active {
-            visibility: visible;
+            opacity: 1;
         }
 
         .waveform-container {
@@ -115,15 +117,17 @@
             height: min(180px, 30vh);
             width: min(180px, 90%);
             opacity: 0;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s ease;
             background: rgba(0, 0, 0, 0.288);
             border-radius: 120px;
             padding: 16px;
             border: 1px solid rgba(255, 255, 255, 0.246);
+            transform: scale(0.95);
         }
 
         .waveform-container.active {
             opacity: 1;
+            transform: scale(1);
         }
 
         .waveform-container.listening {
@@ -135,7 +139,7 @@
             width: min(8px, 2vw);
             height: 100%;
             background: linear-gradient(180deg, #ffffff, #a9a9a9b0);
-            transition: transform 0.05s ease;
+            transition: transform 0.2s ease;
         }
 
         @keyframes wave {
@@ -256,7 +260,7 @@
                             } else {
                                 waveformContainer.classList.remove('active');
                             }
-                        }, 400); // Match the CSS transition duration
+                        }, 200); // Reduced from 400ms to 200ms
                     };
                     
                     if (isTalking) { // Only play if still in talking mode
@@ -370,7 +374,10 @@
             mediaRecorder.stop();
             isRecording = false;
             silenceStart = null;
-            waveformBars.forEach(bar => bar.style.transform = 'scaleY(0.1)');
+            waveformBars.forEach(bar => {
+                bar.style.transition = 'transform 0.1s ease';
+                bar.style.transform = 'scaleY(0.1)';
+            });
         }
 
         talkButton.addEventListener('click', async () => {
@@ -384,9 +391,9 @@
                     currentAudio.pause();
                     currentAudio = null;
                     playbackAnalyser = null;
-                    waveformContainer.classList.remove('active');
-                    waveformContainer.classList.remove('listening');
                 }
+                waveformContainer.classList.remove('active');
+                waveformContainer.classList.remove('listening');
                 talkButton.classList.remove('talking');
                 talkButton.classList.add('not-talking');
                 talkButton.textContent = 'Talk';
