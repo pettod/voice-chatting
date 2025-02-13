@@ -221,7 +221,11 @@
             };
 
             mediaRecorder.onstop = async () => {
-                statusDiv.textContent = 'Thinking...';
+                if (!isTalking) {
+                    statusDiv.textContent = '';
+                } else {
+                    statusDiv.textContent = 'Thinking...';
+                }
                 waveformContainer.classList.remove('listening');
                 
                 const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
