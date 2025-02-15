@@ -5,9 +5,9 @@ import argparse
 from groq import generate_response
 from speech_to_text import transcribe_audio
 from conversation import text_to_speech, GROQ_API_KEY, play_ht_tts
+from aws_polly import aws_text_to_speech
 
-ECHO = False
-PLAYHT = True # Set to False to use ElevenLabs TTS
+MODEL = "aws" # Options: "elevenlabs", "playht", "aws"
 
 @route('/')
 def index():
@@ -27,12 +27,17 @@ def process_audio():
             f.write(audio_data)
         text = transcribe_audio(audio_filename)
         ai_response = generate_response(text, GROQ_API_KEY)
-        if PLAYHT:
+        
+        if MODEL == "playht":
             audio_filename = play_ht_tts(ai_response)
-        else:
+            with open(audio_filename, 'rb') as f:
+                audio_data = f.read()
+        elif MODEL == "aws":
+            audio_data = aws_text_to_speech(ai_response)
+        else: # elevenlabs
             audio_filename = text_to_speech(ai_response)
-        with open(audio_filename, 'rb') as f:
-            audio_data = f.read()
+            with open(audio_filename, 'rb') as f:
+                audio_data = f.read()
 
     if audio_file:
         # Set response headers for audio file
