@@ -1,7 +1,7 @@
 from bottle import route, run, request, response, static_file   
 import time
 import argparse
-from twilio.twiml.voice_response import VoiceResponse
+from twilio.twiml.voice_response import VoiceResponse, Gather
 
 from groq import generate_response
 from speech_to_text import transcribe_audio
@@ -51,15 +51,25 @@ def process_audio():
 
 @route('/voice', method='POST')
 def voice():
-    user_speech = request.forms.get("SpeechResult", "Hello")  # Capture user's speech
-    ai_response = generate_response(user_speech, GROQ_API_KEY)
-    audio_data = aws_text_to_speech(ai_response)
-    audio_filename = 'audio.mp3'
-    with open(audio_filename, 'wb') as f:
-        f.write(audio_data)
-
+    # Create a TwiML response
     response = VoiceResponse()
-    response.play(f"https://rauha.co.uk/{audio_filename}")
+    
+    # Check if we have speech results
+    user_speech = request.forms.get("SpeechResult")
+    
+    if user_speech:
+        # Generate AI response and play it
+        ai_response = generate_response(user_speech, GROQ_API_KEY)
+        audio_data = aws_text_to_speech(ai_response)
+        audio_filename = 'audio.mp3'
+        with open(audio_filename, 'wb') as f:
+            f.write(audio_data)
+        
+        response.play(f"https://rauha.co.uk/{audio_filename}")
+    
+    # Add speech recognition gathering
+    gather = Gather(input='speech', action='/voice', method='POST')
+    response.append(gather)
     
     return str(response)
 
