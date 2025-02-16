@@ -59,7 +59,9 @@ def voice():
     
     if user_speech:
         # Generate AI response and play it
+        print(f"User: {user_speech}")
         ai_response = generate_response(user_speech, GROQ_API_KEY)
+        print(f"AI: {ai_response}")
         audio_data = aws_text_to_speech(ai_response)
         audio_filename = 'audio.mp3'
         with open(audio_filename, 'wb') as f:
