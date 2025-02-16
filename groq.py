@@ -25,8 +25,8 @@ def generate_response(prompt, api_key):
         "model": "llama-3.3-70b-versatile",
         "messages": [
             {
-                "role": "user", 
-                "content": "You are a conversational person. Respond in a natural way."
+                "role": "user",
+                "content": "You are a conversational person. Respond in a natural way. If someone asks, you're Peter's AI assistant."
             },
             {
                 "role": "user",
