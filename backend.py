@@ -51,18 +51,28 @@ def process_audio():
 
 @route('/voice', method='POST')
 def voice():
+    start_time = time.time()
+    
     # Create a TwiML response
     response = VoiceResponse()
     
     # Check if we have speech results
     user_speech = request.forms.get("SpeechResult", "Hello")
+    stt_time = time.time() - start_time
     
     if user_speech:
         # Generate AI response and play it
         print(f"User: {user_speech}")
+        
+        gen_start = time.time()
         ai_response = generate_response(user_speech, GROQ_API_KEY)
+        gen_time = time.time() - gen_start
         print(f"AI: {ai_response}")
+        
+        tts_start = time.time()
         audio_data = aws_text_to_speech(ai_response)
+        tts_time = time.time() - tts_start
+        
         audio_filename = 'audio.mp3'
         with open(audio_filename, 'wb') as f:
             f.write(audio_data)
@@ -72,6 +82,13 @@ def voice():
     # Add speech recognition gathering
     gather = Gather(input='speech', action='/voice', method='POST')
     response.append(gather)
+    
+    total_time = time.time() - start_time
+
+    print(f"{stt_time:.2f}s Speech-to-text")
+    print(f"{gen_time:.2f}s Llama response")
+    print(f"{tts_time:.2f}s Text-to-speech")
+    print(f"{total_time:.2f}s Total voice processing")
     
     return str(response)
 
