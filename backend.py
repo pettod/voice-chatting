@@ -80,7 +80,7 @@ def voice():
         response.play(f"https://rauha.co.uk/{audio_filename}")
     
     # Add speech recognition gathering
-    gather = Gather(input='speech', action='/voice', method='POST', speechTimeout=0.7)
+    gather = Gather(input='speech', action='/voice', method='POST', speechTimeout=1.0)
     response.append(gather)
     
     total_time = time.time() - start_time
