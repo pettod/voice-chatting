@@ -76,11 +76,12 @@ def voice():
     audio_filename = 'audio.mp3'
     with open(audio_filename, 'wb') as f:
         f.write(audio_data)    
-    response.play(f"https://rauha.co.uk/{audio_filename}")
     
     # Add speech recognition gathering
-    gather = Gather(input='speech', action='/voice', method='POST', speechTimeout=1.0)
+    gather = Gather(input="speech dtmf", speechTimeout=1.0, bargeIn=True, action='/voice', method='POST')
+    gather.play(f"https://rauha.co.uk/{audio_filename}")
     response.append(gather)
+    print(response)
     
     total_time = time.time() - start_time
 
