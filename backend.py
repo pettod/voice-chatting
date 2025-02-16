@@ -59,25 +59,24 @@ def voice():
     # Check if we have speech results
     user_speech = request.forms.get("SpeechResult")
     stt_time = time.time() - start_time
-    
+        
+    gen_start = time.time()
     if user_speech:
-        # Generate AI response and play it
         print(f"User: {user_speech}")
-        
-        gen_start = time.time()
         ai_response = generate_response(user_speech, GROQ_API_KEY)
-        gen_time = time.time() - gen_start
-        print(f"AI: {ai_response}")
-        
-        tts_start = time.time()
-        audio_data = aws_text_to_speech(ai_response)
-        tts_time = time.time() - tts_start
-        
-        audio_filename = 'audio.mp3'
-        with open(audio_filename, 'wb') as f:
-            f.write(audio_data)
-        
-        response.play(f"https://rauha.co.uk/{audio_filename}")
+    else:
+        ai_response = "Hello. This is your AI friend helping you to keep your cognitive skills up to date. How are you doing today?"
+
+    # Generate AI response and play it
+    gen_time = time.time() - gen_start
+    print(f"AI: {ai_response}")    
+    tts_start = time.time()
+    audio_data = aws_text_to_speech(ai_response)
+    tts_time = time.time() - tts_start
+    audio_filename = 'audio.mp3'
+    with open(audio_filename, 'wb') as f:
+        f.write(audio_data)    
+    response.play(f"https://rauha.co.uk/{audio_filename}")
     
     # Add speech recognition gathering
     gather = Gather(input='speech', action='/voice', method='POST', speechTimeout=1.0)
