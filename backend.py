@@ -1,6 +1,7 @@
-from bottle import route, run, request, response, static_file
+from bottle import route, run, request, response, static_file   
 import time
 import argparse
+from twilio.twiml.voice_response import VoiceResponse
 
 from groq import generate_response
 from speech_to_text import transcribe_audio
@@ -47,6 +48,33 @@ def process_audio():
         return audio_data
     
     return {'error': 'No audio file received'}
+
+@route('/voice', method='POST')
+def voice():
+    user_speech = request.forms.get("SpeechResult", "Hello")  # Capture user's speech
+    ai_response = generate_response(user_speech, GROQ_API_KEY)
+    audio_data = aws_text_to_speech(ai_response)
+    audio_filename = 'audio.mp3'
+    with open(audio_filename, 'wb') as f:
+        f.write(audio_data)
+
+    response = VoiceResponse()
+    response.play(f"https://rauha.co.uk/{audio_filename}")
+    
+    return str(response)
+
+@route('/<filename>', method='GET')
+def get_audio(filename):
+    try:
+        # Set response headers for audio file
+        response.headers['Content-Type'] = 'audio/mpeg'
+        
+        # Read and return the audio file
+        with open(filename, 'rb') as f:
+            return f.read()
+    except FileNotFoundError:
+        response.status = 404
+        return {'error': 'Audio file not found'}
 
 # Run the server
 if __name__ == '__main__':
