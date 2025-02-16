@@ -55,7 +55,7 @@ def voice():
     response = VoiceResponse()
     
     # Check if we have speech results
-    user_speech = request.forms.get("SpeechResult")
+    user_speech = request.forms.get("SpeechResult", "Hello")
     
     if user_speech:
         # Generate AI response and play it
