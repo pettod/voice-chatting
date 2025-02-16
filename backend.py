@@ -57,7 +57,7 @@ def voice():
     response = VoiceResponse()
     
     # Check if we have speech results
-    user_speech = request.forms.get("SpeechResult", "Hello")
+    user_speech = request.forms.get("SpeechResult")
     stt_time = time.time() - start_time
     
     if user_speech:
@@ -86,8 +86,9 @@ def voice():
     total_time = time.time() - start_time
 
     print(f"{stt_time:.2f}s Speech-to-text")
-    print(f"{gen_time:.2f}s Llama response")
-    print(f"{tts_time:.2f}s Text-to-speech")
+    if user_speech:
+        print(f"{gen_time:.2f}s Llama response")
+        print(f"{tts_time:.2f}s Text-to-speech")
     print(f"{total_time:.2f}s Total voice processing")
     
     return str(response)
