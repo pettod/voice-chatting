@@ -23,7 +23,7 @@ Global host
 python backend.py --port 8080 --global
 ```
 
-Open the client in a browser: (http://localhost:8080)[http://localhost:8080]
+Open the client in a browser: [http://localhost:8080](http://localhost:8080)
 
 ### Run the client
 
