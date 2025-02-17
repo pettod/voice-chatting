@@ -9,12 +9,26 @@ pip install -r requirements.txt
 
 ## Run
 
+### Turn on the server
+
+Localhost
+
 ```bash
-python backend.py
+python backend.py --port 8080
 ```
 
-Global deployment
+Global host
 
 ```bash
-python backend.py --global --port 8080
+python backend.py --port 8080 --global
+```
+
+Open the client in a browser: (http://localhost:8080)[http://localhost:8080]
+
+### Run the client
+
+#### Make a phone call
+
+```bash
+python phone_call.py --phone <phone_number>
 ```
