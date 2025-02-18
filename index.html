@@ -182,7 +182,7 @@
         let silenceTimer = null;
         let audioContext;
         let analyser;
-        let silenceThreshold = 0.01; // Reduced threshold for more sensitivity
+        let silenceThreshold = 7.0; // Standard deviation threshold
         let silenceStart = null;
         const silenceDuration = 1000; // 1 second of silence
         let hasSpeechOccurred = false;
@@ -338,10 +338,18 @@
             const dataArray = new Uint8Array(analyser.frequencyBinCount);
             analyser.getByteFrequencyData(dataArray);
             
-            const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
-            const normalizedAverage = average / 255;
+            // Calculate mean
+            const mean = dataArray.reduce((a, b) => a + b) / dataArray.length;
+            
+            // Calculate standard deviation
+            const squareDiffs = dataArray.map(value => {
+                const diff = value - mean;
+                return diff * diff;
+            });
+            const avgSquareDiff = squareDiffs.reduce((a, b) => a + b) / squareDiffs.length;
+            const stdDev = Math.sqrt(avgSquareDiff);
 
-            if (normalizedAverage >= silenceThreshold) {
+            if (stdDev >= silenceThreshold) {
                 hasSpeechOccurred = true;
                 silenceStart = null;
             } else if (hasSpeechOccurred) {
