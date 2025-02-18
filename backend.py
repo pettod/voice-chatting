@@ -16,6 +16,8 @@ def index():
 
 @route('/process-audio', method='POST')
 def process_audio():
+    start_time = time.time()
+    
     # Get the uploaded audio file
     audio_file = request.files.get('audio')
     audio_data = audio_file.file.read()
@@ -26,9 +28,16 @@ def process_audio():
         audio_filename = 'audio.wav'
         with open(audio_filename, 'wb') as f:
             f.write(audio_data)
+            
+        stt_start = time.time()
         text = transcribe_audio(audio_filename)
-        ai_response = generate_response(text, GROQ_API_KEY)
+        stt_time = time.time() - stt_start
         
+        gen_start = time.time()
+        ai_response = generate_response(text, GROQ_API_KEY)
+        gen_time = time.time() - gen_start
+        
+        tts_start = time.time()
         if MODEL == "playht":
             audio_filename = play_ht_tts(ai_response)
             with open(audio_filename, 'rb') as f:
@@ -39,11 +48,20 @@ def process_audio():
             audio_filename = text_to_speech(ai_response)
             with open(audio_filename, 'rb') as f:
                 audio_data = f.read()
+        tts_time = time.time() - tts_start
 
     if audio_file:
         # Set response headers for audio file
         response.headers['Content-Type'] = 'audio/wav'
         
+        total_time = time.time() - start_time
+        
+        if not ECHO:
+            print(f"{stt_time:.2f}s Speech-to-text")
+            print(f"{gen_time:.2f}s AI response")
+            print(f"{tts_time:.2f}s Text-to-speech") 
+            print(f"{total_time:.2f}s Total processing")
+            
         # Return the same audio data
         return audio_data
     
