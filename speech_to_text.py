@@ -1,9 +1,11 @@
 import whisper
 import pyaudio
 import wave
+import torch
 
 # Initialize the whisper model
-model = whisper.load_model("base")  # You can choose other models like 'small', 'medium', 'large'
+device = "cuda" if torch.cuda.is_available() else "cpu"
+model = whisper.load_model("base").to(device)  # You can choose other models like 'small', 'medium', 'large'
 
 # Record audio using the microphone
 def record_audio(filename="audio.wav", duration=5):
