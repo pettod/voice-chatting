@@ -150,6 +150,29 @@
                 transform: scaleY(1);
             }
         }
+
+        #personalityInput {
+            width: 90%;
+            padding: 12px;
+            border-radius: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(0, 0, 0, 0.2);
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            margin-bottom: 10px;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        #personalityInput:focus {
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
+        #personalityInput::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -157,6 +180,7 @@
         <h1>Otherly</h1>
         <div class="chat-container">
             <div class="button-container">
+                <input type="text" id="personalityInput" placeholder="Describe behavior" />
                 <div class="waveform-container">
                     <div class="waveform-bar"></div>
                     <div class="waveform-bar"></div>
@@ -196,6 +220,7 @@
         const timerDiv = document.getElementById('timer');
         const waveformContainer = document.querySelector('.waveform-container');
         const waveformBars = document.querySelectorAll('.waveform-bar');
+        const personalityInput = document.getElementById('personalityInput');
 
         function updateTimer() {
             const elapsed = Date.now() - startTime;
@@ -231,6 +256,7 @@
                 const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
                 const formData = new FormData();
                 formData.append('audio', audioBlob);
+                formData.append('personality', personalityInput.value);
 
                 try {
                     const response = await fetch('/process-audio', {

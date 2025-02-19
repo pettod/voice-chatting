@@ -10,7 +10,10 @@ def read_api_key():
         return None
 
 
-def generate_response(prompt, api_key):
+def generate_response(prompt, api_key, system_prompt="You are a conversational person. Respond in a natural way."):
+    if system_prompt == "":
+        system_prompt = "You are a conversational person. Respond in a natural way."
+
     # Set the API endpoint URL
     url = "https://api.groq.com/openai/v1/chat/completions"
 
@@ -26,7 +29,7 @@ def generate_response(prompt, api_key):
         "messages": [
             {
                 "role": "user",
-                "content": "You are a conversational person. Respond in a natural way. If someone asks, you're Peter's AI assistant."
+                "content": system_prompt,
             },
             {
                 "role": "user",

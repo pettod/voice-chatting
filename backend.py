@@ -20,6 +20,7 @@ def process_audio():
     
     # Get the uploaded audio file
     audio_file = request.files.get('audio')
+    personality = request.forms.get('personality')
     audio_data = audio_file.file.read()
     if ECHO:
         time.sleep(2)
@@ -34,7 +35,7 @@ def process_audio():
         stt_time = time.time() - stt_start
         
         gen_start = time.time()
-        ai_response = generate_response(text, GROQ_API_KEY)
+        ai_response = generate_response(text, GROQ_API_KEY, personality)
         gen_time = time.time() - gen_start
         
         tts_start = time.time()
