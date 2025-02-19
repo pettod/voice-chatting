@@ -36,7 +36,7 @@ def generate_response(prompt, api_key, system_prompt="You are a conversational p
                 "content": prompt
             }
         ],
-        "temperature": 0.8,  # Slightly higher temperature for more creative responses
+        "temperature": 1.0,  # Slightly higher temperature for more creative responses
         "max_tokens": 1000
     }
 
