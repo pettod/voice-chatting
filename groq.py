@@ -10,7 +10,7 @@ def read_api_key():
         return None
 
 
-def generate_response(prompt, api_key, system_prompt="You are a conversational person. Respond in a natural way."):
+def generate_response(prompt, api_key, system_prompt="You are a conversational person. Respond in a natural way.", max_characters=None):
     if system_prompt == "":
         system_prompt = "You are a conversational person. Respond in a natural way."
 
@@ -47,7 +47,13 @@ def generate_response(prompt, api_key, system_prompt="You are a conversational p
 
         # Parse the JSON response
         data = response.json()
-        return data["choices"][0]["message"]["content"]
+        response_text = data["choices"][0]["message"]["content"]
+        
+        # Limit response length if max_characters is specified
+        if max_characters:
+            response_text = response_text[:max_characters]
+            
+        return response_text
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
         return None

@@ -35,7 +35,7 @@ def process_audio():
         stt_time = time.time() - stt_start
         
         gen_start = time.time()
-        ai_response = generate_response(text, GROQ_API_KEY, personality)
+        ai_response = generate_response(text, GROQ_API_KEY, personality, 3000)
         gen_time = time.time() - gen_start
         
         tts_start = time.time()
