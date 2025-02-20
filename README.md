@@ -1,5 +1,7 @@
 # Voice Cloning
 
+![Image](https://github.com/user-attachments/assets/1c6724c5-33b6-4585-86b1-6ec6873332e5)
+
 ## Installation
 
 ```bash
