@@ -1,6 +1,11 @@
 import requests
 
 
+# TODO: Reset conversation history when a new conversation starts
+# Make individual conversations, so different users won't mix their conversations
+conversation_history = []
+
+
 def read_api_key():
     try:
         with open('api_keys/groq_api_key.txt', 'r') as f:
@@ -8,6 +13,12 @@ def read_api_key():
     except FileNotFoundError:
         print("Error: groq_api_key.txt file not found")
         return None
+
+
+def add_to_conversation_history(role, content):
+    conversation_history.append({"role": role, "content": content})
+    if len(conversation_history) > 10:
+        conversation_history.pop(0)
 
 
 def generate_response(prompt, api_key, system_prompt="", max_characters=None):
@@ -22,6 +33,8 @@ def generate_response(prompt, api_key, system_prompt="", max_characters=None):
         "Content-Type": "application/json"
     }
 
+    add_to_conversation_history("user", prompt)
+
     # Define the payload with the prompt
     payload = {
         "model": "llama-3.3-70b-versatile",
@@ -30,13 +43,12 @@ def generate_response(prompt, api_key, system_prompt="", max_characters=None):
                 "role": "user",
                 "content": system_prompt,
             },
-            {
-                "role": "user",
-                "content": prompt
-            }
+            *conversation_history,
         ],
-        "temperature": 1.0,  # Slightly higher temperature for more creative responses
-        "max_tokens": 1000
+        "temperature": 0.7,  # Slightly higher temperature for more creative responses
+        "max_tokens": 500,
+        "presence_penalty": 0.6,  # Penalize new tokens based on whether they appear in the text so far
+        "frequency_penalty": 0.7,  # Penalize new tokens based on their frequency in the text so far
     }
 
     try:
@@ -51,7 +63,9 @@ def generate_response(prompt, api_key, system_prompt="", max_characters=None):
         # Limit response length if max_characters is specified
         if max_characters:
             response_text = response_text[:max_characters]
-            
+        add_to_conversation_history("assistant", response_text)
+
+        print("AI response:", response_text)
         return response_text
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
