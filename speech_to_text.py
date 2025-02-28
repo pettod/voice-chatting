@@ -2,10 +2,12 @@ import whisper
 import pyaudio
 import wave
 import torch
+import warnings
 
 # Initialize the whisper model
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model = whisper.load_model("base").to(device)  # You can choose other models like 'small', 'medium', 'large'
+warnings.filterwarnings("ignore", message="FP16 is not supported on CPU")
 
 # Record audio using the microphone
 def record_audio(filename="audio.wav", duration=5):
