@@ -281,6 +281,17 @@
                 formData.append('personality', personalityInput.value);
 
                 try {
+                    // Get URL parameters for language and model
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const language = urlParams.get('language');
+                    const model = urlParams.get('model');
+                    const voice = urlParams.get('voice');
+                    
+                    // Add parameters to form data if they exist
+                    if (language) formData.append('language', language);
+                    if (model) formData.append('model', model);
+                    if (voice) formData.append('voice', voice);
+                    
                     const response = await fetch('/process-audio', {
                         method: 'POST',
                         body: formData

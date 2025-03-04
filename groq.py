@@ -15,9 +15,9 @@ def read_api_key():
         return None
 
 
-def add_to_conversation_history(role, content):
+def add_to_conversation_history(role, content, history_length=10):
     conversation_history.append({"role": role, "content": content})
-    if len(conversation_history) > 10:
+    if len(conversation_history) > history_length:
         conversation_history.pop(0)
 
 

@@ -23,10 +23,10 @@ with open(f'api_keys/playht_voice_id_{PERSON}.txt', 'r') as f:
 # Groq
 GROQ_API_KEY = read_api_key()
 
-client = Client(
-    user_id=PLAY_HT_USER_ID,
-    api_key=PLAY_HT_API_KEY,
-)
+#client = Client(
+#    user_id=PLAY_HT_USER_ID,
+#    api_key=PLAY_HT_API_KEY,
+#)
 
 def play_ht_tts(text, output_file="ai_response.wav"):
     options = TTSOptions(voice=PLAY_HT_VOICE_ID)
@@ -36,14 +36,19 @@ def play_ht_tts(text, output_file="ai_response.wav"):
     return output_file
 
 # Convert AI response to speech using ElevenLabs
-def text_to_speech(text, output_file="ai_response.mp3"):
-    url = f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}"
+def text_to_speech(text, output_file="ai_response.mp3", voice=None, language=None):
+    voice_id = VOICE_ID
+    if voice:
+        with open(f'api_keys/elevenlabs_voice_id_{voice}.txt', 'r') as f:
+            voice_id = f.read().strip()  # ElevenLabs voice ID
+    url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
     headers = {
         "xi-api-key": ELEVENLABS_API_KEY,
         "Content-Type": "application/json"
     }
     data = {
         "text": text,
+        "model_id": "eleven_english_v1" if not language else "eleven_multilingual_v2",
         "voice_settings": {"stability": 0.5, "similarity_boost": 0.7}
     }
     response = requests.post(url, headers=headers, json=data)
@@ -55,7 +60,6 @@ def text_to_speech(text, output_file="ai_response.mp3"):
     else:
         print("Error generating speech:", response.text)
         return None
-
 # Main conversational loop
 def main():
     while True:

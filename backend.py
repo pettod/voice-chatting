@@ -20,7 +20,13 @@ def process_audio():
     
     # Get the uploaded audio file
     audio_file = request.files.get('audio')
-    personality = request.forms.get('personality')
+    system_prompt = request.forms.get('personality')
+    model = request.forms.get('model') or MODEL
+    voice = request.forms.get('voice') or None
+    language = request.forms.get('language') or "english"
+    if language != "english":
+        system_prompt += f" Speak only {language}."
+    
     audio_data = audio_file.file.read()
     if ECHO:
         time.sleep(2)
@@ -35,18 +41,38 @@ def process_audio():
         stt_time = time.time() - stt_start
         
         gen_start = time.time()
-        ai_response = generate_response(text, GROQ_API_KEY, personality, 3000)
+        ai_response = generate_response(text, GROQ_API_KEY, system_prompt, 3000)
         gen_time = time.time() - gen_start
         
         tts_start = time.time()
-        if MODEL == "playht":
+        if model == "playht":
             audio_filename = play_ht_tts(ai_response)
             with open(audio_filename, 'rb') as f:
                 audio_data = f.read()
-        elif MODEL == "aws":
-            audio_data = aws_text_to_speech(ai_response)
+        elif model == "aws":
+            print(language)
+            if language:
+                language_voice_map = {
+                    "finnish": "Suvi",
+                    "english": "Danielle",
+                    "swedish": "Astrid",
+                    "german": "Vicki",
+                    "french": "Léa",
+                    "spanish": "Lucia",
+                    "italian": "Bianca",
+                    "portuguese": "Camila",
+                    "polish": "Ewa",
+                    "danish": "Naja",
+                    "norwegian": "Liv",
+                    "dutch": "Laura"
+                }
+                
+                # Override voice with language-specific voice if available
+                if language.lower() in language_voice_map:
+                    voice = language_voice_map[language.lower()]
+            audio_data = aws_text_to_speech(ai_response, voice_id=voice)
         else: # elevenlabs
-            audio_filename = text_to_speech(ai_response)
+            audio_filename = text_to_speech(ai_response, voice=voice, language=language)
             with open(audio_filename, 'rb') as f:
                 audio_data = f.read()
         tts_time = time.time() - tts_start
