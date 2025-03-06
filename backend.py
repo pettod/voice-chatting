@@ -1,4 +1,4 @@
-from bottle import route, run, request, response, static_file   
+from bottle import route, run, request, response, static_file, redirect, template   
 import time
 import argparse
 from twilio.twiml.voice_response import VoiceResponse, Gather
@@ -15,6 +15,9 @@ from create_email_list import create_email_list
 
 MODEL = "aws" # Options: "elevenlabs", "playht", "aws"
 
+# Password for accessing the email list
+EMAIL_LIST_PASSWORD = "hackerhouse"  # You should change this to a secure password
+
 @route('/')
 def index():
     return static_file('landing_page.html', root='.')
@@ -23,9 +26,16 @@ def index():
 def demo():
     return static_file('demo.html', root='.')
 
-@route('/email-list')
+@route('/email-list', method=['GET', 'POST'])
 def email_list():
-    return create_email_list()
+    if request.method == 'POST':
+        password = request.forms.get('password')
+        if password == EMAIL_LIST_PASSWORD:
+            return create_email_list()
+        else:
+            return template('email_password.html', error=True)
+    else:
+        return template('email_password.html', error=False)
 
 @route('/process-audio', method='POST')
 def process_audio():
