@@ -12,7 +12,11 @@ MODEL = "aws" # Options: "elevenlabs", "playht", "aws"
 
 @route('/')
 def index():
-    return static_file('index.html', root='.')
+    return static_file('landing_page.html', root='.')
+
+@route('/demo')
+def demo():
+    return static_file('demo.html', root='.')
 
 @route('/process-audio', method='POST')
 def process_audio():
