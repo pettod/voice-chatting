@@ -480,9 +480,10 @@
         <div class="container">
             <h2>Apply for Beta Access</h2>
             <p>Be among the first to get full access to the product. Join the email list.</p>
-            <form class="beta-form">
-                <input type="email" placeholder="Enter your email address" required style="outline: none; box-shadow: none;" onfocus="this.style.borderColor='rgba(255, 255, 255, 0.6)'" onblur="this.style.borderColor='rgba(255, 255, 255, 0.3)'">
+            <form class="beta-form" onsubmit="submitEmail(event)">
+                <input type="email" id="emailInput" placeholder="Enter your email address" required style="outline: none; box-shadow: none;" onfocus="this.style.borderColor='rgba(255, 255, 255, 0.6)'" onblur="this.style.borderColor='rgba(255, 255, 255, 0.3)'">
                 <button type="submit" class="btn btn-outline">Submit</button>
+                <p id="submitMessage" style="color: #48ee8d; margin-top: 10px; display: none;">Your email has been received</p>
             </form>
         </div>
     </section>
@@ -505,6 +506,33 @@
                 document.querySelector('nav').classList.remove('active');
             });
         });
+        async function submitEmail(e) {
+            e.preventDefault();
+            const email = document.getElementById('emailInput').value;
+            try {
+                const response = await fetch('/send-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    const submitMessage = document.getElementById('submitMessage');
+                    submitMessage.style.display = 'block';
+                    document.getElementById('emailInput').value = '';
+                    setTimeout(() => {
+                        submitMessage.style.display = 'none';
+                    }, 5000);
+                } else {
+                    alert('Error submitting email. Please try again.');
+                }
+            } catch (err) {
+                console.error('Error:', err);
+                alert('Error submitting email. Please try again.');
+            }
+        }
     </script>
 </body>
 </html>

@@ -2,6 +2,8 @@ from bottle import route, run, request, response, static_file
 import time
 import argparse
 from twilio.twiml.voice_response import VoiceResponse, Gather
+import json
+import os
 
 from groq import generate_response
 from speech_to_text import transcribe_audio
@@ -154,6 +156,31 @@ def get_audio(filename):
     except FileNotFoundError:
         response.status = 404
         return {'error': 'Audio file not found'}
+
+@route('/send-email', method='POST')
+def send_email():
+    print("Comes here!!!!!")
+    try:
+        # Get the email from the request body
+        body = request.body.read().decode('utf-8')
+        data = json.loads(body)
+        email = data.get('email')
+        
+        if not email:
+            response.status = 400
+            return {'success': False, 'error': 'Email is required'}
+        
+        # Create emails directory if it doesn't exist
+        os.makedirs('emails', exist_ok=True)
+        
+        # Append the email to the emails.txt file
+        with open('emails/emails.txt', 'a') as f:
+            f.write(f"{email}\n")
+        print("Fuck yeah", email)
+        return {'success': True}
+    except Exception as e:
+        response.status = 500
+        return {'success': False, 'error': str(e)}
 
 # Run the server
 if __name__ == '__main__':
