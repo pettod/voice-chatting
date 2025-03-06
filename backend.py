@@ -4,6 +4,7 @@ import argparse
 from twilio.twiml.voice_response import VoiceResponse, Gather
 import json
 import os
+from datetime import datetime
 
 from groq import generate_response
 from speech_to_text import transcribe_audio
@@ -159,7 +160,6 @@ def get_audio(filename):
 
 @route('/send-email', method='POST')
 def send_email():
-    print("Comes here!!!!!")
     try:
         # Get the email from the request body
         body = request.body.read().decode('utf-8')
@@ -173,10 +173,13 @@ def send_email():
         # Create emails directory if it doesn't exist
         os.makedirs('emails', exist_ok=True)
         
-        # Append the email to the emails.txt file
+        # Get current timestamp
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        # Append the email and timestamp to the emails.txt file
         with open('emails/emails.txt', 'a') as f:
-            f.write(f"{email}\n")
-        print("Fuck yeah", email)
+            f.write(f"{timestamp} - {email}\n")
+
         return {'success': True}
     except Exception as e:
         response.status = 500
