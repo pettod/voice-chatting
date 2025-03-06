@@ -11,6 +11,7 @@ from speech_to_text import transcribe_audio
 from conversation import text_to_speech, GROQ_API_KEY, play_ht_tts
 from aws_polly import aws_text_to_speech
 from telegram_bot import send_telegram_notification
+from create_email_list import create_email_list
 
 MODEL = "aws" # Options: "elevenlabs", "playht", "aws"
 
@@ -21,6 +22,10 @@ def index():
 @route('/demo')
 def demo():
     return static_file('demo.html', root='.')
+
+@route('/email-list')
+def email_list():
+    return create_email_list()
 
 @route('/process-audio', method='POST')
 def process_audio():
